@@ -1,0 +1,54 @@
+import SwiftUI
+
+struct ContentView: View {
+    // 用于存储contentView的尺寸
+    @State private var contentSize: CGSize =.zero
+    // 用于存储当前滚动偏移量
+    @State private var scrollOffset: CGFloat = 0
+
+    var body: some View {
+        ScrollView {
+            VStack {
+                // 这里放置你的内容
+                ForEach(0..<50) { i in
+                    Text("Item \(i)")
+                       .frame(width: 300, height: 50)
+                }
+            }
+            // 获取contentView尺寸和当前滚动位置
+          .background(
+                GeometryReader { geometry in
+                    Color.clear
+                        // 将contentView尺寸作为偏好值传递
+                      .preference(key: ContentSizeKey.self, value: geometry.size)
+                        // 将当前滚动位置作为偏好值传递
+                      .preference(key: ScrollOffsetKey.self, value: geometry.frame(in:.named("scrollView")).minY)
+                }
+            )
+        }
+        // 标记ScrollView坐标空间
+      .coordinateSpace(name: "scrollView")
+      .onPreferenceChange(ContentSizeKey.self) { size in
+            contentSize = size
+        }
+      .onPreferenceChange(ScrollOffsetKey.self) { value in
+            scrollOffset = value
+        }
+    }
+}
+
+// 用于获取contentView尺寸的PreferenceKey
+struct ContentSizeKey: PreferenceKey {
+    static var defaultValue: CGSize =.zero
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+        value = nextValue()
+    }
+}
+
+// 用于获取滚动偏移量的PreferenceKey
+struct ScrollOffsetKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
